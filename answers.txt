@@ -1,0 +1,88 @@
+Question 1:
+    Leftmost Derivation:
+    <program>   => begin <Statement> end
+                => <Assignment>
+                => <Identifier> = <Expression>
+                => A = <Expression>
+                => A = <Term>
+                => A = <Term> * <Factor>
+                => A = <Factor> * <Factor>
+                => A = <Identifier> * <Factor>
+                => A = B * <Factor>
+                => A = B * ( <Expression> )
+                => A = B * ( <Term> )
+                => A = B * (<Term> * <Factor>)
+                => A = B * (<Factor> * <Factor>)
+                => A = B * (<Identifier> * <Factor>)
+                => A = B * (C * <Factor>)
+                => A = B * (C * ( <Expression> ))
+                => A = B * (C * (<Expression> + <Term>))
+                => A = B * (C * (<Expression> + <Factor>))
+                => A = B * (C * (<Expression> + <Identifier>))
+                => A = B * (C * (<Expression> + B))
+                => A = B * (C * (<Term> + B))
+                => A = B * (C * (<Factor> + B))
+                => A = B * (C * (<Identifier> + B))
+                => A = B * (C * (A + B))
+
+
+    PARSE TREE:
+                        Statement
+                            |
+                        Assignment
+                        /   |   \
+                Identifier  =   Expression
+                    |               |
+                    A       =       Term
+                                   /  |  \
+                                Term  *  Factor
+                                  |         \
+                                Factor      ( Expression )
+                                  |                 |
+                              Identifier          Term
+                                  |             /   |   \  
+                                  B          Term   *     Factor
+                                               |               |
+                                            Factor          ( Expression )
+                                               |                /       |       \
+                                            Identifier      Expression  +       Term
+                                               |                |                 |
+                                               C               Term             Factor
+                                                                |                 |
+                                                              Factor            Identifier
+                                                                |                 |
+                                                            Identifier            B
+                                                                |
+                                                                A
+
+
+Question 2:
+a. Using Static Scope, what is printed to the screen?
+For Static Scope, the variable depend on the structure of the program.
+    1) main calls foo(u=42, w=17)
+    1.5) foo declares local v = u(global)=42
+    2) foo calls bar(add) 
+    2.5) bar declares local u = w(global)=17
+    3) bar calls add(z=v(global)=69)
+    3.5) add sets global u = v(69) + u(42) + z(69) = 180
+print(u) returns the new global u = 180
+
+b. Using Dynamic Scope with Deep Binding, what is printed to the screen?
+Hint: The sum for u is 126, but due to deep binding, it's foo's local v that gets involved.
+For Deep Binding, it binds the environment at the time the function is passed as an argument.
+    1) main calls foo(u=42, w=17)
+    1.5) foo declares local v = u(global)=42
+    2) foo calls bar(add)
+    2.5) bar declares local u = w(global)=17
+    3) bar calls add(z=v(from foo=u(from global)=42))
+    3.5) add sets global u = v(from bar=42) + u(from global=42) + z(from bar=v=42) = 42 + 42 + 42 = 126 
+
+c. Using Dynamic Scope with Shallow Binding, what is printed to the screen?
+Hint: The sum for u is 101, but again it's foo's local v that matters.
+For Dynamic Scope, variables are binded based on the current state of program execution.
+    1) main calls foo(u=42, w=17)
+    1.5) foo declares local v = u(global)=42
+    2) foo calls bar(add)
+    2.5) bar declares local u = w(global)=17
+    3) bar calls add(z=v(from foo=u(from global)=42))
+    3.5) add sets global u = v(from foo=42) + u(from bar=17) + z(from bar=v=42) = 42 + 17 + 42 = 101
