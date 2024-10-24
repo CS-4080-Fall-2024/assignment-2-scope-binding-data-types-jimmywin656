@@ -19,6 +19,8 @@ class Face:
         return self.grid[0]
     def get_bot_row(self):
         return self.grid[-1]
+    def get_layer_row(self, num):
+        return self.grid[num]
     
     # FACE SETTERS
     def set_rightmost_col(self, right_col):
@@ -31,6 +33,8 @@ class Face:
         self.grid[0] = row
     def set_bot_row(self, row):
         self.grid[-1] = row
+    def set_layer_row(self, num, row):
+        self.grid[num] = row
 
 class RubiksCube:
     # CONSTANT COLORS
@@ -176,6 +180,47 @@ class RubiksCube:
         self.rotate_face_cw(face)
         self.rotate_face_cw(face)
 
+    # for specifically rotating one of the middle layers only works if cube size >= 3
+    # top layer = 1,    bot layer = cube size
+    # only offering ccw rotations from right to left
+    def rotate_layer_ccw(self, layer_num):
+        layer_num = layer_num - 1   # subtract one to match index
+        if layer_num > self.size:
+            print("Layer number out of bound")
+            return
+        elif layer_num < 0:
+            print("Negative layer number")
+            return
+        
+        # we only care for middle layers because top and bottom layer can be done through the other function
+        if layer_num == 0:
+            self.rotate_face_cw("Up")
+        elif layer_num == self.size:
+            self.rotate_face_cw("Down")
+
+        # faces affected from a middle layer rotation
+        adj_faces = ["Front", "Left", "Back", "Right"]
+
+        def get_middle_row(face):
+            return self.faces[face].get_layer_row(layer_num)
+        
+        front_row = get_middle_row("Front")
+        left_row = get_middle_row("Left")
+        back_row = get_middle_row("Back")
+        right_row = get_middle_row("Right")
+
+        # perform the ccw rotation on the middle layer
+        # right face moves left
+        new_rows = [right_row, front_row, left_row, back_row]
+
+        def set_middle_row(face, new_row):
+            self.faces[face].set_layer_row(layer_num, new_row)
+        
+        set_middle_row("Front", new_rows[0])
+        set_middle_row("Left", new_rows[1])
+        set_middle_row("Back", new_rows[2])
+        set_middle_row("Right", new_rows[3])
+
     # display rubiks cube
     def display(self):
         for name, face in self.faces.items():
@@ -199,6 +244,15 @@ cube.rotate_face_cw("Right")
 cube.rotate_face_cw("Back")
 cube.rotate_face_ccw("Front")   # counter clockwise
 
+
+# inputs should be given from [1:size]
+# BEWARE AFTER ROTATING MIDDLE LAYER, CUBE BECOMES HARD TO TRACK BECAUSE CENTERS ARE OFF MEANING FACES DON'T MATCH THE ORIGINAL LAYOUT !!!
+# middle layer rotation test (uncomment below to test)
+#######################################################################################
+# cube.rotate_layer_ccw(2)
+# cube.rotate_layer_ccw(3)
+
+
 # HOW THE CUBE FACES ARE DISPLAYED
 ###############################################################################
 # FRONT = RED side (WHITE above, YELLOW below, GREEN left, BLUE right)
@@ -207,4 +261,6 @@ cube.rotate_face_ccw("Front")   # counter clockwise
 # LEFT = GREEN side (WHITE above, YELLOW below, ORANGE left, RED right)
 # RIGHT = BLUE side (WHITE above, YELLOW below, RED left, ORANGE right)
 # BACK = ORANGE side (WHITE above, YELLOW below, BLUE left, GREEN right)
+# #############################################################################
+# cube rotations are first held in the above position before being rotated CW or CCW
 cube.display()
